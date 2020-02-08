@@ -8,7 +8,7 @@ class Game {
   }
   
   setInitialStatus(){
-    this.player = this.spawnPlayer();
+    this.player = new Player(this);
     this.enemies = [];
     this.shots = [];
     this.over = false;
@@ -92,37 +92,6 @@ class Game {
     ctx.fillText("Game Over, press R", vCanvas.width/5, vCanvas.height/2); 
   }
 
-	spawnPlayer () {
-    const vCanvas = this.canvas 
-    const vXstartPos = Math.ceil(vCanvas.width / 2);
-    const vYstartPos = Math.ceil(vCanvas.height * 0.8);
-		return {
-      x : vXstartPos,
-      y : vYstartPos,
-      color : this.getRandomColor(),
-      radius : 5,
-      speed: 4,
-      focusSpeed : 2
-		};
-  }
-  
-  spawnEnemy () {
-    const vCanvas = this.canvas; 
-    const vXPos = Math.ceil(Math.random() * vCanvas.width);
-    const vYPos = Math.ceil(vCanvas.height * 0.2);
-		return {
-      x : vXPos,
-      y : vYPos,
-      color : this.getRandomColor(),
-      radius : 7,
-      killed : false,
-      hp : 50,
-      shotCooldown: 40,
-      shotCounter: 40,
-      shotSpeed: 5
-		};
-  }
-
 	setListeners(){
 
 		const setInputs = (event, state) =>{
@@ -179,7 +148,6 @@ class Game {
   
   addEnemies(){
     let vCounter = this.enemyRateCounter;
-    //console.log(vCounter);
 
     if (this.enemyRateCounter !== 0){
       this.enemyRateCounter--;
@@ -234,7 +202,7 @@ class Game {
     }
     
     if (oInputs.shoot) {
-      this.shoot();
+      oPlayer.shoot();
     }
   }
   
@@ -243,7 +211,7 @@ class Game {
 
     aEnemies.forEach(enemy =>{
       if (enemy.shotCounter === 0){
-        this.enemyShoot(enemy.x, enemy.y, enemy.shotSpeed, enemy.color);
+        enemy.shoot();
         enemy.shotCounter = enemy.shotCooldown;
       } else {
         enemy.shotCounter--;
@@ -259,28 +227,6 @@ class Game {
     }
   }
 
-  enemyShoot(xIn, yIn, s, colorIn){
-    this.shots.push({
-      x : xIn,
-      y : yIn + 10,
-      speed : -5,
-      radius : 2,
-      hit : false,
-      color : colorIn
-    });
-  }
-  
-  shoot(){
-    const oPlayer = this.player;
-    this.shots.push({
-      x : oPlayer.x,
-      y : oPlayer.y - 10,
-      speed : 10,
-      radius : 2,
-      hit : false,
-      color : oPlayer.color
-    });
-  }
 
   updateShots(){
     const vCanvas = this.canvas;
@@ -295,7 +241,7 @@ class Game {
 
 	addEnemy(){
     if (!this.over){
-      this.enemies.push(this.spawnEnemy());
+      this.enemies.push(new Enemy(this));
     }
 	}
 
@@ -352,6 +298,65 @@ class Game {
 	  return color;
 	}
 
+}
+
+class Player {
+  constructor(Game){
+    this.game = Game;
+    const vCanvas = Game.canvas;
+    const vXstartPos = Math.ceil(vCanvas.width / 2);
+    const vYstartPos = Math.ceil(vCanvas.height * 0.8);
+		this.x = vXstartPos;
+    this.y = vYstartPos;
+    this.color = Game.getRandomColor();
+    this.radius = 5;
+    this.speed = 4;
+    this.focusSpeed = 2;
+
+    return this;
+  }
+
+  shoot(){
+    this.game.shots.push({
+      x : this.x,
+      y : this.y - 10,
+      speed : 10,
+      radius : 2,
+      hit : false,
+      color : this.color
+    });
+  }
+}
+
+class Enemy {
+  constructor(Game){
+    this.game = Game;
+    const vCanvas = Game.canvas; 
+    const vXPos = Math.ceil(Math.random() * vCanvas.width);
+    const vYPos = Math.ceil(vCanvas.height * 0.2);
+		this.x = vXPos;
+    this.y = vYPos;
+    this.color = Game.getRandomColor();
+    this.radius = 7;
+    this.killed = false;
+    this.hp = 50;
+    this.shotCooldown = 40;
+    this.shotCounter = 40;
+    this.shotSpeed = 5;
+  
+    return this;
+  }
+  
+  shoot(){
+    this.game.shots.push({
+      x : this.x,
+      y : this.y + 10,
+      speed : -5,
+      radius : 2,
+      hit : false,
+      color : this.color
+    });
+  }
 }
 
 const loadGame = () => {
