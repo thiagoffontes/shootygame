@@ -236,7 +236,7 @@ class Game {
       shot.y -= shot.speed;
     });
 
-    aShots = aShots.filter( shot => shot.y > -10 && shot.y < vCanvas.height + 10 );
+    this.shots = aShots.filter( shot => shot.y > -10 && shot.y < vCanvas.height + 10 );
   }
 
 	addEnemy(){
